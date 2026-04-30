@@ -14,7 +14,7 @@ Thumbs.db
 
 # Environment and config
 *.env
-*.properties
+#*.properties
 
 # Reports and test artifacts
 reports/

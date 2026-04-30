@@ -12,8 +12,8 @@
 
   <properties>
     <!-- Use the JDK version installed on your system -->
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>24</maven.compiler.source>
+    <maven.compiler.target>24</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -45,6 +45,14 @@
       <version>7.15.0</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- ExtentReports Adapter -->
+    <dependency>
+      <groupId>tech.grasshopper</groupId>
+      <artifactId>extentreports-cucumber7-adapter</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>
