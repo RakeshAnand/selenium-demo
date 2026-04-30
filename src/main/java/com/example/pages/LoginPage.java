@@ -6,9 +6,10 @@ import org.openqa.selenium.WebDriver;
 public class LoginPage {
     WebDriver driver;
 
-    By username = By.id("username");
-    By password = By.id("password");
-    By loginBtn = By.id("login");
+    // Use 'name' attributes from the DOM
+    By username = By.name("uid");
+    By password = By.name("password");
+    By loginBtn = By.name("btnLogin");
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;

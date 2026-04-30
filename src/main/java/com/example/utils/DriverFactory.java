@@ -9,7 +9,7 @@ public class DriverFactory {
     public static WebDriver getDriver() {
         if (driver == null) {
             // Set path to chromedriver if not in PATH
-            System.setProperty("webdriver.chrome.driver", "C:\\drivers\\chromedriver.exe");
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
             driver = new ChromeDriver();
             driver.manage().window().maximize();
         }
