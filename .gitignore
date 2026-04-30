@@ -1,5 +1,31 @@
+# Maven build output
 target/
-*.log
 *.class
+*.log
+
+# IDE settings
 .idea/
 .vscode/
+*.iml
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment and config
+*.env
+*.properties
+
+# Reports and test artifacts
+reports/
+test-output/
+surefire-reports/
+cucumber-reports/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.swp
