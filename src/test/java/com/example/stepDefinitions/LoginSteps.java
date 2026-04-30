@@ -2,6 +2,7 @@ package com.example.stepDefinitions;
 
 import com.example.pages.LoginPage;
 import com.example.utils.DriverFactory;
+import com.example.utils.ConfigReader;
 import io.cucumber.java.en.*;
 
 public class LoginSteps {
@@ -9,15 +10,17 @@ public class LoginSteps {
 
     @Given("user is on login page")
     public void user_is_on_login_page() {
-        // Reuse driver created in Hooks
-        DriverFactory.getDriver().get("http://demo.guru99.com/V4/");
+        String url = ConfigReader.getProperty("url");
+        DriverFactory.getDriver().get(url);
         loginPage = new LoginPage(DriverFactory.getDriver());
     }
 
-    @When("user enters {string} and {string}")
-    public void user_enters_and(String user, String pass) {
-        loginPage.enterUsername(user);
-        loginPage.enterPassword(pass);
+    @When("user enters credentials")
+    public void user_enters_credentials_from_config() {
+        String username = ConfigReader.getProperty("username");
+        String password = ConfigReader.getProperty("password");
+        loginPage.enterUsername(username);
+        loginPage.enterPassword(password);
     }
 
     @When("clicks login")
