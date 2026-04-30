@@ -2,7 +2,8 @@
 <suite name="DemoSuite">
   <test name="DemoTests">
     <classes>
-      <class name="com.example.SeleniumTest"/>
+      <!-- <class name="com.example.SeleniumTest"/> -->
+      <class name="com.example.runners.TestNGRunner"/>
     </classes>
   </test>
 </suite>
