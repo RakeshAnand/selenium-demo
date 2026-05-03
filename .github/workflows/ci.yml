@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [17, 21]   # Test against JDK 17 and JDK 21
+    name: Build and Test (Java ${{ matrix.java }})
+
+    steps:
+      # Checkout source code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Java (matrix version)
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: maven
+
+      # Build project
+      - name: Build with Maven
+        run: mvn -B clean compile
+
+      # Run sanity tests (Cucumber JSON + HTML)
+      - name: Run Sanity Tests
+        run: mvn test -Dcucumber.options="--plugin json:core/target/cucumber.json --plugin html:core/target/cucumber-reports.html"
+
+      # Run Cucumber verify (pretty + HTML)
+      - name: Run Cucumber Verify
+        run: mvn verify -Dcucumber.options="--plugin pretty --plugin html:core/target/cucumber-reports.html"
+
+      # Upload Surefire reports
+      - name: Upload Surefire Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-java-${{ matrix.java }}
+          path: core/target/surefire-reports/
+
+      # Upload Cucumber reports
+      - name: Upload Cucumber Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-java-${{ matrix.java }}
+          path: core/target/cucumber-reports.html
+
+      # Upload Extent reports
+      - name: Upload Extent Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: extent-reports-java-${{ matrix.java }}
+          path: reports/extent.html
+
+      # Upload all artifacts (HTML, XML, JSON)
+      - name: Upload All Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-reports-java-${{ matrix.java }}
+          path: |
+            **/target/**/*.html
+            **/target/**/*.xml
+            **/target/**/*.json
+            reports/*.html
+            reports/*.json
