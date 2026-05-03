@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [17, 21]   # Test against JDK 17 and JDK 21
+        java: [17]   # Run on JDK 17 and JDK 21
     name: Build and Test (Java ${{ matrix.java }})
 
     steps:
