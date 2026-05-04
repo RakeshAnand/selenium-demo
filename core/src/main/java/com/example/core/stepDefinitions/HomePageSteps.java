@@ -12,7 +12,8 @@ public class HomePageSteps {
     public void user_should_see_welcome_message() {
         homePage = new HomePage(DriverFactory.getDriver());
         String message = homePage.getWelcomeMessage(); // implement this in HomePage
-        Assert.assertTrue(message.contains("123Welcome"), "Welcome message not found!");
+        // Assert.assertTrue(message.contains("Welcome"), "Welcome message not found!");
         System.out.println("ACTUAL TEXT: " + message);
+        Assert.fail("Forcing test failure for demo purposes");
     }
 }

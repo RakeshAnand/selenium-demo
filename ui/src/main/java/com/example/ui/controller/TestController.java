@@ -2,12 +2,19 @@ package com.example.ui.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
 
 import com.example.ui.utils.ExtentJsonParser;
 import com.example.ui.utils.TestStats;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class TestController {
@@ -18,57 +25,101 @@ public class TestController {
 
     @GetMapping("/run-tests")
     @ResponseBody
-    public String runTests() {
+    public String runTests(@RequestParam(value = "feature", required = false) String feature) {
         try {
-            // 1. Enable Headless Mode
             System.setProperty("webdriver.headless", "true");
 
-            // 2. Create unique filenames for history
-            String timestamp = String.valueOf(System.currentTimeMillis());
-            // Using ../ to ensure we hit the root reports folder, not the 'ui' module
-            // folder
-            String historyDir = "../reports/history";
-            String historyFile = historyDir + "/run_" + timestamp + ".json";
-            String latestJson = "../reports/cucumber.json";
+            // 1. Define paths
+            String historyDir = PROJECT_ROOT + "/reports/history";
+            String latestExtentJson = PROJECT_ROOT + "/reports/extent.json";
+            String cucumberJson = PROJECT_ROOT + "/reports/cucumber.json";
 
-            // 3. Ensure the history directory exists
             new File(historyDir).mkdirs();
 
-            // 4. Configure Cucumber Arguments
-            String[] args = new String[] {
-                    "--glue", "com.example.core.stepDefinitions",
-                    "classpath:features",
-                    "--plugin", "pretty",
-                    // Generate the 'Latest' report
-                    "--plugin", "json:" + latestJson,
-                    // Generate the 'History' report for the trend chart
-                    "--plugin", "json:" + historyFile,
-                    "--plugin", "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
-            };
+            // 2. Configure Cucumber Arguments (Removed historyFile from here)
+            List<String> argsList = new ArrayList<>();
+            argsList.add("--glue");
+            argsList.add("com.example.core.stepDefinitions");
 
-            // 5. Execute Tests
-            byte exitCode = io.cucumber.core.cli.Main.run(args, Thread.currentThread().getContextClassLoader());
-            if (exitCode != 0) {
-                return "Tests Finished with Failures. <a href='/'>View Dashboard</a>";
+            String featurePath = (feature != null && !feature.equals("All Features"))
+                    ? "classpath:features/" + feature
+                    : "classpath:features";
+            argsList.add(featurePath);
+
+            argsList.add("--plugin");
+            argsList.add("pretty");
+            argsList.add("--plugin");
+            argsList.add("json:" + cucumberJson);
+            argsList.add("--plugin");
+            argsList.add("com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:");
+
+            // 3. Execute Tests
+            io.cucumber.core.cli.Main.run(argsList.toArray(new String[0]),
+                    Thread.currentThread().getContextClassLoader());
+
+            // 4. IMPORTANT: Manual copy of Extent JSON to History
+            // This ensures the history file has the "children" structure your parser
+            // expects
+            File source = new File(latestExtentJson);
+            if (source.exists()) {
+                String timestamp = String.valueOf(System.currentTimeMillis());
+                File dest = new File(historyDir + "/run_" + timestamp + ".json");
+                java.nio.file.Files.copy(source.toPath(), dest.toPath());
             }
 
-            // 6. Brief wait to ensure file system handles are closed
-            Thread.sleep(2000);
-
-            return "Tests Completed (Exit Code: " + exitCode + "). <a href='/'>Go to Dashboard</a>";
+            return "Tests Completed. <a href='/dashboard'>Go to Dashboard</a>";
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error during test execution: " + e.getMessage();
+            return "Error: " + e.getMessage();
         }
     }
 
     @GetMapping("/dashboard")
-    public String showDashboard(org.springframework.ui.Model model) {
-        // Point to the EXTENT JSON file
+    public String showDashboard(Model model) {
+        // 1. Construct the path
         String jsonPath = PROJECT_ROOT + "/reports/extent.json";
-        TestStats stats = ExtentJsonParser.parse(jsonPath);
+        File jsonFile = new File(jsonPath);
+
+        // 2. Debug Logging (Check your IntelliJ/Console output!)
+        System.out.println("DEBUG: Looking for report at: " + jsonFile.getAbsolutePath());
+        System.out.println("DEBUG: File exists? " + jsonFile.exists());
+
+        TestStats stats;
+        if (jsonFile.exists() && jsonFile.length() > 0) {
+            stats = ExtentJsonParser.parse(jsonPath);
+            // Fallback: If parser returns null or empty stats
+            if (stats == null || stats.getTotal() == 0) {
+                System.out.println("DEBUG: Parser returned 0 stats. Check JSON content.");
+            }
+        } else {
+            stats = new TestStats(0, 0, 0, 0, "No Runs Found");
+        }
 
         model.addAttribute("stats", stats);
+        model.addAttribute("history", getTestHistory());
         return "index";
+    }
+
+    /**
+     * Helper method to scan the history directory and parse all previous run
+     * results.
+     */
+    private List<TestStats> getTestHistory() {
+        File folder = new File(PROJECT_ROOT + "/reports/history");
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+
+        if (files == null || files.length == 0) {
+            return new ArrayList<>();
+        }
+
+        return Arrays.stream(files)
+                // Sort by last modified time so the trend chart goes from oldest to newest
+                .sorted(Comparator.comparingLong(File::lastModified))
+                .map(file -> {
+                    // Assuming your parser can handle the cucumber JSON format or
+                    // that you've set up the history files to be compatible
+                    return ExtentJsonParser.parse(file.getAbsolutePath());
+                })
+                .collect(Collectors.toList());
     }
 }

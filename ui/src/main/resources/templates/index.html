@@ -107,16 +107,17 @@
             <form action="/run-tests" method="get">
                 <div class="input-group">
                     <label class="input-group-text" for="featureFile">Feature</label>
-                    <select class="form-select" id="featureFile">
-                        <option selected>All Features</option>
+
+                    <select class="form-select" id="featureFile" name="feature">
+                        <option value="All Features" selected>All Features</option>
                         <option value="login.feature">Login Functionality</option>
-                        <option value="search.feature">Search Functionality</option>
+                        <option value="todo.feature">Todo Functionality</option>
                     </select>
+
                     <button class="btn btn-primary" type="submit">Run Tests</button>
                 </div>
             </form>
-            <small class="text-muted mt-2 d-block">Note: Clicking run will execute tests in headless mode via the
-                controller.</small>
+            <small class="text-muted mt-2 d-block">Note: Executing via Controller in headless mode.</small>
         </div>
     </div>
 

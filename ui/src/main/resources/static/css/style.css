@@ -1,75 +1,218 @@
-/* General body styling */
+/* ===== Global Styles ===== */
 body {
-    background-color: #f8f9fa;
-    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Roboto', 'Open Sans', sans-serif;
+    font-size: 16px;
+    color: #333333;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
 }
 
-/* Navbar */
+h1,
+h2,
+h3 {
+    font-weight: 600;
+    color: #004080;
+    /* corporate blue */
+}
+
+/* ===== Navbar/Header ===== */
 .navbar {
+    background-color: #004080;
+    font-size: 1.1rem;
+    font-weight: 500;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-brand {
+    color: #ffffff !important;
+    font-size: 1.3rem;
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
-.navbar-nav .nav-link {
-    margin-right: 1rem;
-    transition: color 0.2s ease-in-out;
+.nav-link {
+    color: #ffffff !important;
+    margin-right: 15px;
 }
 
-.navbar-nav .nav-link:hover {
-    color: #0d6efd;
+.nav-link:hover {
+    color: #ffcc00 !important;
+    /* highlight on hover */
 }
 
-/* Cards */
-.card {
-    border: none;
+/* ===== Footer ===== */
+footer {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ===== Metric Cards ===== */
+.metric-card {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease-in-out;
+    padding: 20px;
+    background-color: #ffffff;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.card:hover {
-    transform: translateY(-3px);
+.metric-card h2 {
+    font-size: 1.5rem;
+    color: #004080;
+    margin-bottom: 10px;
 }
 
-.card-title {
+.metric-card p {
     font-size: 1rem;
-    font-weight: 500;
-    color: #495057;
+    color: #555555;
 }
 
-.display-6 {
-    font-weight: 600;
-}
-
-/* Chart container */
-#resultsChart {
-    max-width: 300px;
-    max-height: 300px;
-    margin: auto;
-}
-
-/* Buttons */
-.btn-lg {
-    padding: 0.75rem 2rem;
+/* ===== Buttons ===== */
+.btn-primary {
+    background-color: #004080;
+    color: #fff;
     border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s ease-in-out;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+    border: none;
 }
 
-.btn-lg:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
+.btn-primary:hover {
+    background-color: #003366;
 }
 
-/* Utility spacing */
-.container {
-    max-width: 1200px;
+/* ===== Charts ===== */
+.chart-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.row {
-    margin-bottom: 1.5rem;
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== Utility ===== */
+.shadow-sm {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.rounded {
+    border-radius: 8px !important;
+}
+
+/* ===== Theme Variables ===== */
+:root {
+    --primary-bg: #f5f7fa;
+    --primary-text: #333333;
+    --card-bg: #ffffff;
+    --navbar-bg: #004080;
+    --navbar-text: #ffffff;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --accent-color: #ff6600;
+}
+
+[data-theme="dark"] {
+    --primary-bg: #1e1e2f;
+    --primary-text: #e0e0e0;
+    --card-bg: #2c2c3c;
+    --navbar-bg: #222244;
+    --navbar-text: #ffffff;
+    --footer-bg: #2c2c3c;
+    --footer-text: #aaaaaa;
+    --accent-color: #ffcc00;
+}
+
+/* ===== Global Styles ===== */
+body {
+    font-family: 'Roboto', 'Open Sans', sans-serif;
+    font-size: 16px;
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    margin: 0;
+    padding: 0;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 600;
+    color: var(--navbar-bg);
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand,
+.nav-link {
+    color: var(--navbar-text) !important;
+}
+
+.nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+/* ===== Footer ===== */
+footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ===== Cards ===== */
+.metric-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    background-color: var(--card-bg);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.metric-card h2 {
+    font-size: 1.5rem;
+    color: var(--navbar-bg);
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+    background-color: var(--navbar-bg);
+    color: #fff;
+    border-radius: 6px;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #003366;
+}
+
+/* ===== Charts ===== */
+.chart-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#loadingOverlay {
+    backdrop-filter: blur(5px);
+    transition: all 0.5s ease;
 }
