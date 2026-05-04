@@ -1,11 +1,5 @@
 package com.example.ui.controller;
 
-import io.cucumber.core.cli.Main;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,24 +20,45 @@ public class TestController {
     @ResponseBody
     public String runTests() {
         try {
-            // Ensure the reports folder exists
-            new File(PROJECT_ROOT + "/reports").mkdirs();
+            // 1. Enable Headless Mode
+            System.setProperty("webdriver.headless", "true");
 
+            // 2. Create unique filenames for history
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            // Using ../ to ensure we hit the root reports folder, not the 'ui' module
+            // folder
+            String historyDir = "../reports/history";
+            String historyFile = historyDir + "/run_" + timestamp + ".json";
+            String latestJson = "../reports/cucumber.json";
+
+            // 3. Ensure the history directory exists
+            new File(historyDir).mkdirs();
+
+            // 4. Configure Cucumber Arguments
             String[] args = new String[] {
                     "--glue", "com.example.core.stepDefinitions",
                     "classpath:features",
                     "--plugin", "pretty",
-                    // We still generate cucumber.json for Jenkins, but UI will ignore it
-                    "--plugin", "json:" + PROJECT_ROOT + "/reports/cucumber.json",
+                    // Generate the 'Latest' report
+                    "--plugin", "json:" + latestJson,
+                    // Generate the 'History' report for the trend chart
+                    "--plugin", "json:" + historyFile,
                     "--plugin", "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
             };
 
-            io.cucumber.core.cli.Main.run(args, Thread.currentThread().getContextClassLoader());
-            Thread.sleep(3000); // Wait for Extent to write extent.json
+            // 5. Execute Tests
+            byte exitCode = io.cucumber.core.cli.Main.run(args, Thread.currentThread().getContextClassLoader());
+            if (exitCode != 0) {
+                return "Tests Finished with Failures. <a href='/'>View Dashboard</a>";
+            }
 
-            return "Tests Completed. <a href='/dashboard'>Go to Dashboard</a>";
+            // 6. Brief wait to ensure file system handles are closed
+            Thread.sleep(2000);
+
+            return "Tests Completed (Exit Code: " + exitCode + "). <a href='/'>Go to Dashboard</a>";
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            e.printStackTrace();
+            return "Error during test execution: " + e.getMessage();
         }
     }
 

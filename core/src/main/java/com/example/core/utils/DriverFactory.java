@@ -12,23 +12,25 @@ public class DriverFactory {
     public static WebDriver getDriver() {
         if (driver == null) {
             WebDriverManager.chromedriver().setup();
-
             ChromeOptions options = new ChromeOptions();
 
-            // Check if we are running in GitHub Actions
+            // 1. Detect Environment & Controller Flags
             boolean isCloudRun = System.getenv("GITHUB_ACTIONS") != null;
+            boolean isUIHeadless = Boolean.parseBoolean(System.getProperty("webdriver.headless", "false"));
 
-            if (isCloudRun) {
+            // 2. Apply Headless Arguments if either condition is true
+            if (isCloudRun || isUIHeadless) {
                 options.addArguments("--headless=new");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
+                options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
             }
 
             driver = new ChromeDriver(options);
 
-            // Only maximize if we aren't headless (headless size is set above)
-            if (!isCloudRun) {
+            // 3. Only maximize if the browser is visible
+            if (!isCloudRun && !isUIHeadless) {
                 driver.manage().window().maximize();
             }
         }
@@ -39,6 +41,8 @@ public class DriverFactory {
         if (driver != null) {
             driver.quit();
             driver = null;
+            // Clear the property so next run doesn't stay headless unless explicitly set
+            System.clearProperty("webdriver.headless");
         }
     }
 }
