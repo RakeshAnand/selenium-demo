@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -50,10 +51,28 @@ public class HomeController {
         model.addAttribute("skipped", stats.getSkipped());
         model.addAttribute("lastRunTime", stats.getLastRunTime());
 
+        // Add this line to pass the feature list to the UI
+        // Path to the features folder in the 'core' module
+        File featureFolder = new File("../core/src/main/resources/features");
+        List<String> featureFiles = new ArrayList<>();
+
+        if (featureFolder.exists() && featureFolder.isDirectory()) {
+            File[] files = featureFolder.listFiles((dir, name) -> name.endsWith(".feature"));
+            if (files != null) {
+                for (File file : files) {
+                    featureFiles.add(file.getName());
+                }
+            }
+        }
+
+        // This MUST match the 'features' variable name in your HTML th:each
+        model.addAttribute("features", featureFiles);
+
         // Debug to console to see what path it is actually using
         try {
             System.out.println("Dashboard is reading from: " + new File(jsonPath).getCanonicalPath());
             System.out.println("Stats Found - Passed: " + stats.getPassed() + ", Failed: " + stats.getFailed());
+            System.out.println("Features Found: " + featureFiles.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

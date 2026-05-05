@@ -10,80 +10,107 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* ===== Theme Variables ===== */
-        :root[data-theme="dark"] {
-            --bg-body: radial-gradient(circle at top left, #1e293b, #0f172a);
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --navbar-bg: rgba(15, 23, 42, 0.9);
-            --chart-grid: rgba(255, 255, 255, 0.05);
-            --input-bg: #1e293b;
-            --overlay-bg: rgba(15, 23, 42, 0.85);
-            --accent-blue: #60a5fa;
-            /* Lighter blue for dark mode visibility */
-        }
-
+        /* ===== Unified Theme Variables ===== */
         :root[data-theme="light"] {
             --bg-body: #f1f5f9;
             --card-bg: #ffffff;
             --glass-border: #e2e8f0;
             --text-main: #1e293b;
             --text-muted: #64748b;
-            --navbar-bg: #1e293b;
-            --chart-grid: rgba(0, 0, 0, 0.05);
+            --navbar-bg: #0A1F44;
             --input-bg: #ffffff;
             --overlay-bg: rgba(255, 255, 255, 0.9);
             --accent-blue: #3b82f6;
+            --chart-grid: rgba(0, 0, 0, 0.05);
+        }
+
+        :root[data-theme="dark"] {
+            --bg-body: radial-gradient(circle at top left, #1e293b, #0f172a);
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --navbar-bg: #0f172a;
+            --input-bg: #1e293b;
+            --overlay-bg: rgba(15, 23, 42, 0.85);
+            --accent-blue: #60a5fa;
+            --chart-grid: rgba(255, 255, 255, 0.05);
         }
 
         :root {
             --accent-green: #10b981;
             --accent-red: #ef4444;
+            --transition: all 0.3s ease;
         }
 
+        /* ===== Global Styles ===== */
         body {
             background: var(--bg-body);
             background-attachment: fixed;
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            transition: background 0.3s ease, color 0.3s ease;
+            margin: 0;
+            transition: var(--transition);
         }
 
-        /* Fixed Navbar & Logo Styling */
+        /* ===== Responsive Typography & Spacing ===== */
+        @media (max-width: 768px) {
+            h3 {
+                font-size: 1.25rem;
+            }
+
+            .card {
+                padding: 1rem !important;
+            }
+
+            .container {
+                padding-top: 1rem !important;
+            }
+        }
+
+        /* ===== Navbar ===== */
         .navbar {
             background: var(--navbar-bg) !important;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--glass-border);
+            padding: 0.75rem 0;
         }
 
         .navbar-logo {
-            height: 32px;
+            height: 30px;
             width: auto;
             object-fit: contain;
         }
 
-        /* Fix for Logo visibility in Dark Mode if the PNG is dark */
         :root[data-theme="dark"] .navbar-logo {
             filter: brightness(0) invert(1);
         }
 
+        /* ===== Cards & Metrics ===== */
         .card {
             background: var(--card-bg) !important;
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border) !important;
             border-radius: 1.25rem !important;
+            transition: transform 0.2s ease;
+            height: 100%;
         }
 
-        /* Fixing the 'Total' card color issues */
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
         .text-primary {
             color: var(--accent-blue) !important;
-        }
-
-        .border-primary {
-            border-color: var(--accent-blue) !important;
         }
 
         .text-success {
@@ -94,18 +121,53 @@
             color: var(--accent-red) !important;
         }
 
+        /* ===== Charts ===== */
         .chart-wrapper {
             position: relative;
-            height: 280px;
+            height: 300px;
+            /* Fixed height for Chart.js to scale properly */
             width: 100%;
         }
 
+        /* ===== Forms ===== */
+        .run-tests-form {
+            background: var(--card-bg) !important;
+            border: 1px dashed var(--glass-border) !important;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+        }
+
+        .form-select-custom {
+            background-color: var(--input-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        .btn-run-suite {
+            background-color: var(--accent-blue) !important;
+            color: white !important;
+            font-weight: 600;
+            border: none;
+            padding: 0.5rem 1.5rem;
+        }
+
+        /* Handle Form Stack on Mobile */
+        @media (max-width: 576px) {
+            .run-tests-form .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .run-tests-form .input-group>* {
+                width: 100% !important;
+                border-radius: 0.5rem !important;
+            }
+        }
+
+        /* ===== Loader Overlay ===== */
         #loadingOverlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: var(--overlay-bg);
             backdrop-filter: blur(12px);
             display: none;
@@ -116,7 +178,7 @@
         }
 
         .progress-container {
-            width: 300px;
+            width: min(300px, 80%);
             height: 6px;
             background: rgba(0, 0, 0, 0.1);
             border-radius: 10px;
@@ -130,42 +192,6 @@
             background: var(--accent-blue);
             transition: width 0.4s ease;
         }
-
-        .status-text {
-            color: var(--text-main);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .run-tests-form {
-            background: var(--card-bg) !important;
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 1.25rem;
-            padding: 1.5rem;
-        }
-
-        .btn-run-suite {
-            background-color: var(--accent-blue) !important;
-            color: white !important;
-            font-weight: 600;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 0.5rem;
-        }
-
-        .form-select-custom {
-            background-color: var(--input-bg) !important;
-            color: var(--text-main) !important;
-            border: 1px solid var(--glass-border) !important;
-        }
-
-        .metric-title {
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
     </style>
 </head>
 
@@ -174,7 +200,7 @@
         <div class="progress-container">
             <div id="progressBar"></div>
         </div>
-        <p class="status-text" id="statusLabel">Initializing Engine...</p>
+        <p class="status-text fw-bold" id="statusLabel">Initializing Engine...</p>
     </div>
 
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -184,16 +210,17 @@
                 <span>TestSphere</span>
             </a>
 
-            <div class="d-flex align-items-center">
-                <button class="btn btn-outline-light btn-sm me-3" onclick="toggleTheme()" id="themeBtn">
+            <div class="d-flex align-items-center ms-auto">
+                <a class="nav-link text-white me-3 small-mobile-text" href="/view-report">Report</a>
+                <button class="btn btn-outline-light btn-sm" onclick="toggleTheme()" id="themeBtn">
                     🌓 Theme
                 </button>
-                <a class="nav-link text-white small" href="/view-report">Latest Report</a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4 pb-5">
+
         <div class="row g-3 mb-4 text-center">
             <div class="col-6 col-md-3">
                 <div class="card p-3 shadow-sm border-bottom border-primary border-3">
@@ -216,37 +243,41 @@
             <div class="col-6 col-md-3">
                 <div class="card p-3 shadow-sm">
                     <p class="metric-title mb-1">Last Run</p>
-                    <p class="mb-0 small text-info" th:text="${stats.lastRunTime}">--:--</p>
+                    <p class="mb-0 small text-info fw-bold" th:text="${stats.lastRunTime}">--:--</p>
                 </div>
             </div>
         </div>
 
         <div class="row g-4">
-            <div class="col-lg-8">
+            <div class="col-12 col-lg-8">
                 <div class="card p-4">
                     <h6 class="fw-bold mb-3">Stability Trend</h6>
-                    <div class="chart-wrapper"><canvas id="trendChart"></canvas></div>
+                    <div class="chart-wrapper">
+                        <canvas id="trendChart"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+            <div class="col-12 col-lg-4">
                 <div class="card p-4 text-center">
                     <h6 class="fw-bold mb-3">Health Distribution</h6>
-                    <div class="chart-wrapper"><canvas id="resultsChart"></canvas></div>
+                    <div class="chart-wrapper">
+                        <canvas id="resultsChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="run-tests-form shadow-sm mt-4">
             <div class="row align-items-center">
-                <div class="col-md-6 mb-3 mb-md-0">
+                <div class="col-md-7 col-lg-8 mb-3 mb-md-0">
                     <h5 class="fw-bold mb-0">Launch Execution</h5>
                     <p class="text-muted small mb-0">Select a feature set to start automated tests.</p>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5 col-lg-4">
                     <form action="/run-tests" method="get" onsubmit="handleStartTests()">
                         <div class="input-group">
                             <select name="feature" class="form-select form-select-custom">
-                                <option value="All Features">Run All Features</option>
+                                <option value="All Features">All Features</option>
                                 <option th:each="feature : ${features}" th:value="${feature}" th:text="${feature}">
                                     Feature Name
                                 </option>
@@ -260,18 +291,33 @@
     </div>
 
     <script th:inline="javascript">
-        // Data from Controller
+        /* --- Initialization & Data --- */
         const stats = [[${ stats }]];
         const historyData = [[${ history }]];
         let trendChart, resultsChart;
 
+        /* --- Theme Management --- */
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+            updateCharts();
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        /* --- Execution Overlay Logic --- */
         function handleStartTests() {
             const overlay = document.getElementById('loadingOverlay');
             const bar = document.getElementById('progressBar');
             const label = document.getElementById('statusLabel');
             overlay.style.display = 'flex';
+
             let width = 0;
             const messages = ["Booting WebDriver...", "Parsing Cucumber...", "Executing Steps...", "Finalizing Data..."];
+
             const interval = setInterval(() => {
                 if (width >= 94) {
                     clearInterval(interval);
@@ -286,16 +332,7 @@
             }, 500);
         }
 
-        function toggleTheme() {
-            const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', target);
-            localStorage.setItem('theme', target);
-            updateCharts();
-        }
-
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-
+        /* --- Responsive Chart Updates --- */
         function updateCharts() {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -304,6 +341,7 @@
             if (resultsChart) resultsChart.destroy();
             if (trendChart) trendChart.destroy();
 
+            // Doughnut Chart
             resultsChart = new Chart(document.getElementById('resultsChart'), {
                 type: 'doughnut',
                 data: {
@@ -316,33 +354,62 @@
                 },
                 options: {
                     maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: { legend: { position: 'bottom', labels: { color: textColor, usePointStyle: true } } }
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: textColor, usePointStyle: true, font: { size: 11 } } }
+                    }
                 }
             });
 
+            // Trend Chart
             if (historyData && historyData.length > 0) {
                 trendChart = new Chart(document.getElementById('trendChart'), {
                     type: 'line',
                     data: {
                         labels: historyData.map(r => r.lastRunTime),
                         datasets: [
-                            { label: 'Passed', data: historyData.map(r => r.passed), borderColor: '#10b981', backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)', fill: true, tension: 0.4 },
-                            { label: 'Failed', data: historyData.map(r => r.failed), borderColor: '#ef4444', backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)', fill: true, tension: 0.4 }
+                            {
+                                label: 'Passed',
+                                data: historyData.map(r => r.passed),
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Failed',
+                                data: historyData.map(r => r.failed),
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
                         ]
                     },
                     options: {
                         maintainAspectRatio: false,
                         scales: {
-                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 } },
-                            x: { grid: { display: false }, ticks: { color: textColor } }
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: textColor, font: { size: 10 } }
+                            }
                         },
-                        plugins: { legend: { labels: { color: textColor, usePointStyle: true } } }
+                        plugins: {
+                            legend: { labels: { color: textColor, usePointStyle: true } }
+                        }
                     }
                 });
             }
         }
+
         window.onload = updateCharts;
+        // Re-render charts on window resize to ensure responsiveness
+        window.addEventListener('resize', updateCharts);
     </script>
 </body>
 

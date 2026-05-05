@@ -273,3 +273,29 @@ canvas {
 :root[data-theme="dark"] .navbar-logo {
     filter: brightness(0) invert(1);
 }
+
+/* Specific fix for mobile Safari and small screens */
+@media (max-width: 400px) {
+    .navbar-brand span {
+        display: none;
+        /* Hides the text "TestSphere" on tiny screens to save space for the logo */
+    }
+
+    .small-mobile-text {
+        font-size: 0.85rem;
+        /* Shrinks the link text slightly */
+        margin-right: 10px !important;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Ensure the link is always white and clickable */
+.nav-link {
+    color: white !important;
+    text-decoration: none;
+    font-weight: 500;
+}
