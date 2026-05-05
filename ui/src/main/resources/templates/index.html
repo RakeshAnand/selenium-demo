@@ -21,6 +21,8 @@
             --chart-grid: rgba(255, 255, 255, 0.05);
             --input-bg: #1e293b;
             --overlay-bg: rgba(15, 23, 42, 0.85);
+            --accent-blue: #60a5fa;
+            /* Lighter blue for dark mode visibility */
         }
 
         :root[data-theme="light"] {
@@ -33,10 +35,10 @@
             --chart-grid: rgba(0, 0, 0, 0.05);
             --input-bg: #ffffff;
             --overlay-bg: rgba(255, 255, 255, 0.9);
+            --accent-blue: #3b82f6;
         }
 
         :root {
-            --accent-blue: #3b82f6;
             --accent-green: #10b981;
             --accent-red: #ef4444;
         }
@@ -50,10 +52,22 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
+        /* Fixed Navbar & Logo Styling */
         .navbar {
             background: var(--navbar-bg) !important;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--glass-border);
+        }
+
+        .navbar-logo {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Fix for Logo visibility in Dark Mode if the PNG is dark */
+        :root[data-theme="dark"] .navbar-logo {
+            filter: brightness(0) invert(1);
         }
 
         .card {
@@ -61,6 +75,23 @@
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border) !important;
             border-radius: 1.25rem !important;
+        }
+
+        /* Fixing the 'Total' card color issues */
+        .text-primary {
+            color: var(--accent-blue) !important;
+        }
+
+        .border-primary {
+            border-color: var(--accent-blue) !important;
+        }
+
+        .text-success {
+            color: var(--accent-green) !important;
+        }
+
+        .text-danger {
+            color: var(--accent-red) !important;
         }
 
         .chart-wrapper {
@@ -148,11 +179,16 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">SELENIUM ANALYTICS</a>
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <img th:src="@{/images/logo.png}" alt="Logo" class="navbar-logo me-2">
+                <span>TestSphere</span>
+            </a>
+
             <div class="d-flex align-items-center">
-                <button class="btn btn-outline-light btn-sm me-3" onclick="toggleTheme()" id="themeBtn">🌓
-                    Theme</button>
-                <a class="nav-link text-white small" href="/view-report" target="_blank">Latest Report</a>
+                <button class="btn btn-outline-light btn-sm me-3" onclick="toggleTheme()" id="themeBtn">
+                    🌓 Theme
+                </button>
+                <a class="nav-link text-white small" href="/view-report">Latest Report</a>
             </div>
         </div>
     </nav>
@@ -160,9 +196,9 @@
     <div class="container mt-4 pb-5">
         <div class="row g-3 mb-4 text-center">
             <div class="col-6 col-md-3">
-                <div class="card p-3 shadow-sm">
+                <div class="card p-3 shadow-sm border-bottom border-primary border-3">
                     <p class="metric-title mb-1">Total</p>
-                    <h3 class="fw-bold" th:text="${stats.total}">0</h3>
+                    <h3 class="fw-bold text-primary" th:text="${stats.total}">0</h3>
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -229,16 +265,13 @@
         const historyData = [[${ history }]];
         let trendChart, resultsChart;
 
-        // Overlay & Progress Logic
         function handleStartTests() {
             const overlay = document.getElementById('loadingOverlay');
             const bar = document.getElementById('progressBar');
             const label = document.getElementById('statusLabel');
             overlay.style.display = 'flex';
-
             let width = 0;
             const messages = ["Booting WebDriver...", "Parsing Cucumber...", "Executing Steps...", "Finalizing Data..."];
-
             const interval = setInterval(() => {
                 if (width >= 94) {
                     clearInterval(interval);
@@ -253,7 +286,6 @@
             }, 500);
         }
 
-        // Theme Toggle
         function toggleTheme() {
             const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', target);
@@ -264,7 +296,6 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        // Chart.js initialization
         function updateCharts() {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#94a3b8' : '#64748b';

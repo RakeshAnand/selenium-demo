@@ -46,7 +46,9 @@ h3 {
 
 /* ===== Navbar ===== */
 .navbar {
-    background-color: var(--navbar-bg);
+    /* background-color: var(--navbar-bg); */
+    background-color: #0A1F44;
+    /* Deep Navy Blue */
     color: var(--navbar-text);
     font-size: 1.1rem;
     font-weight: 500;
@@ -240,4 +242,34 @@ canvas {
     width: 0%;
     background: linear-gradient(90deg, var(--accent-blue), #818cf8);
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure all headers inside cards use the theme's main text color */
+.card h3,
+.card h6,
+.card p:not(.metric-title):not(.text-danger):not(.text-success):not(.text-info) {
+    color: var(--text-main);
+    transition: color 0.3s ease;
+}
+
+/* Optional: Make the 'Total' number specifically stand out in Dark Mode */
+:root[data-theme="dark"] {
+    --accent-total: #a78bfa;
+}
+
+/* Update your class */
+.text-primary {
+    color: var(--accent-total) !important;
+}
+
+.navbar-logo {
+    height: 30px;
+    /* Adjust height to match your navbar size */
+    width: auto;
+    object-fit: contain;
+}
+
+/* Optional: If your logo is dark, this makes it white when Dark Mode is active */
+:root[data-theme="dark"] .navbar-logo {
+    filter: brightness(0) invert(1);
 }
