@@ -108,6 +108,9 @@ public class TestController {
         model.addAttribute("stats", stats);
         model.addAttribute("history", getTestHistory());
 
+        // Add this line to pass the feature list to the UI
+        model.addAttribute("features", getAvailableFeatures());
+
         // Return the name of your HTML file (if it's index.html, return "index")
         return "index";
     }
@@ -132,5 +135,21 @@ public class TestController {
                 .map(file -> ExtentJsonParser.parse(file.getAbsolutePath()))
                 .filter(s -> s != null)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Scans the classpath for available feature files and returns their names.
+     */
+    private List<String> getAvailableFeatures() {
+        String featuresPath = PROJECT_ROOT + "/core/src/main/resources/features";
+        File folder = new File(featuresPath);
+
+        if (folder.exists() && folder.isDirectory()) {
+            return Arrays.stream(folder.listFiles())
+                    .filter(f -> f.getName().endsWith(".feature"))
+                    .map(File::getName)
+                    .collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 }

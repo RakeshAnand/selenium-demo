@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" data-theme="dark">
+<html xmlns:th="http://www.thymeleaf.org" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -20,6 +20,7 @@
             --navbar-bg: rgba(15, 23, 42, 0.9);
             --chart-grid: rgba(255, 255, 255, 0.05);
             --input-bg: #1e293b;
+            --overlay-bg: rgba(15, 23, 42, 0.85);
         }
 
         :root[data-theme="light"] {
@@ -31,6 +32,7 @@
             --navbar-bg: #1e293b;
             --chart-grid: rgba(0, 0, 0, 0.05);
             --input-bg: #ffffff;
+            --overlay-bg: rgba(255, 255, 255, 0.9);
         }
 
         :root {
@@ -67,17 +69,14 @@
             width: 100%;
         }
 
-        /* ===== MODIFIED: Light Progress Overlay ===== */
         #loadingOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Light glass effect */
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--overlay-bg);
+            backdrop-filter: blur(12px);
             display: none;
             z-index: 9999;
             justify-content: center;
@@ -86,52 +85,47 @@
         }
 
         .progress-container {
-            width: 350px;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 20px;
+            width: 300px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
         }
 
         #progressBar {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
-            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            background: var(--accent-blue);
+            transition: width 0.4s ease;
         }
 
         .status-text {
+            color: var(--text-main);
             font-size: 0.9rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            /* Dark text for light overlay */
-            color: #1e293b;
+            font-weight: 600;
         }
 
-        .status-subtext {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 8px;
-        }
-
-        /* ===== Global Components ===== */
         .run-tests-form {
             background: var(--card-bg) !important;
-            border: 1px dashed var(--glass-border) !important;
+            border: 1px solid var(--glass-border) !important;
             border-radius: 1.25rem;
             padding: 1.5rem;
         }
 
-        .btn-primary {
-            background: var(--accent-blue);
+        .btn-run-suite {
+            background-color: var(--accent-blue) !important;
+            color: white !important;
+            font-weight: 600;
             border: none;
-            border-radius: 0.75rem;
-            font-weight: 700;
-            padding: 0.6rem 1.5rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .form-select-custom {
+            background-color: var(--input-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--glass-border) !important;
         }
 
         .metric-title {
@@ -150,7 +144,6 @@
             <div id="progressBar"></div>
         </div>
         <p class="status-text" id="statusLabel">Initializing Engine...</p>
-        <p class="status-subtext">Automated Selenium Suite is running in the background</p>
     </div>
 
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -209,18 +202,21 @@
 
         <div class="run-tests-form shadow-sm mt-4">
             <div class="row align-items-center">
-                <div class="col-md-7 mb-3 mb-md-0">
+                <div class="col-md-6 mb-3 mb-md-0">
                     <h5 class="fw-bold mb-0">Launch Execution</h5>
                     <p class="text-muted small mb-0">Select a feature set to start automated tests.</p>
                 </div>
-                <div class="col-md-5">
-                    <form action="/run-tests" method="get" onsubmit="handleStartTests()" class="input-group">
-                        <select class="form-select shadow-none" name="feature">
-                            <option value="All Features">All Features</option>
-                            <option value="login.feature">Login Suite</option>
-                            <option value="todo.feature">API Suite</option>
-                        </select>
-                        <button class="btn btn-primary" type="submit">Run Suite</button>
+                <div class="col-md-6">
+                    <form action="/run-tests" method="get" onsubmit="handleStartTests()">
+                        <div class="input-group">
+                            <select name="feature" class="form-select form-select-custom">
+                                <option value="All Features">Run All Features</option>
+                                <option th:each="feature : ${features}" th:value="${feature}" th:text="${feature}">
+                                    Feature Name
+                                </option>
+                            </select>
+                            <button type="submit" class="btn btn-run-suite">Run Suite</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -228,11 +224,12 @@
     </div>
 
     <script th:inline="javascript">
+        // Data from Controller
         const stats = [[${ stats }]];
         const historyData = [[${ history }]];
         let trendChart, resultsChart;
 
-        // Progress Bar Logic
+        // Overlay & Progress Logic
         function handleStartTests() {
             const overlay = document.getElementById('loadingOverlay');
             const bar = document.getElementById('progressBar');
@@ -240,30 +237,23 @@
             overlay.style.display = 'flex';
 
             let width = 0;
-            const messages = [
-                "Booting WebDriver...",
-                "Parsing Cucumber Scenarios...",
-                "Executing Test Steps...",
-                "Finalizing Report Data..."
-            ];
+            const messages = ["Booting WebDriver...", "Parsing Cucumber...", "Executing Steps...", "Finalizing Data..."];
 
             const interval = setInterval(() => {
                 if (width >= 94) {
                     clearInterval(interval);
                     label.innerText = "Finalizing Results...";
                 } else {
-                    // Incremental progress simulation
-                    width += (95 - width) * 0.08;
+                    width += (95 - width) * 0.05;
                     bar.style.width = width + '%';
-
                     if (width > 15 && width < 40) label.innerText = messages[1];
                     if (width > 40 && width < 80) label.innerText = messages[2];
                     if (width > 80) label.innerText = messages[3];
                 }
-            }, 700);
+            }, 500);
         }
 
-        // Theme Switcher Logic
+        // Theme Toggle
         function toggleTheme() {
             const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', target);
@@ -271,9 +261,10 @@
             updateCharts();
         }
 
-        const savedTheme = localStorage.getItem('theme') || 'dark';
+        const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
+        // Chart.js initialization
         function updateCharts() {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -305,20 +296,8 @@
                     data: {
                         labels: historyData.map(r => r.lastRunTime),
                         datasets: [
-                            {
-                                label: 'Passed',
-                                data: historyData.map(r => r.passed),
-                                borderColor: '#10b981',
-                                backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
-                                fill: true, tension: 0.4
-                            },
-                            {
-                                label: 'Failed',
-                                data: historyData.map(r => r.failed),
-                                borderColor: '#ef4444',
-                                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
-                                fill: true, tension: 0.4
-                            }
+                            { label: 'Passed', data: historyData.map(r => r.passed), borderColor: '#10b981', backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)', fill: true, tension: 0.4 },
+                            { label: 'Failed', data: historyData.map(r => r.failed), borderColor: '#ef4444', backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)', fill: true, tension: 0.4 }
                         ]
                     },
                     options: {
