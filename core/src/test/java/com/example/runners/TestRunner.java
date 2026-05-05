@@ -10,12 +10,11 @@ import io.cucumber.testng.CucumberOptions;
  * - Extent Spark HTML report
  * - Extent JSON report (parsed by dashboard)
  */
-@CucumberOptions(features = "classpath:features", // Change from "src/test/resources/features" to this
-                glue = "com.example.core.stepDefinitions", plugin = {
-                                "pretty",
-                                "html:target/cucumber-reports.html",
-                                "json:target/cucumber.json",
-                                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
-                })
+@CucumberOptions(features = "classpath:features", glue = "com.example.core.stepDefinitions", tags = "not @ignore", plugin = {
+        "pretty",
+        "html:target/cucumber-reports.html",
+        "json:target/cucumber.json",
+        "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
+})
 public class TestRunner extends AbstractTestNGCucumberTests {
 }
