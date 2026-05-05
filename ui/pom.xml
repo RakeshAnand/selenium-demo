@@ -14,7 +14,37 @@
   <packaging>jar</packaging>
 
   <dependencies>
-    <!-- ExtentReports -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>3.2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+      <version>3.2.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.example</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>com.aventstack</groupId>
       <artifactId>extentreports</artifactId>
@@ -26,12 +56,6 @@
       <version>1.14.0</version>
     </dependency>
 
-    <!-- Cucumber -->
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-core</artifactId>
-      <version>7.14.0</version>
-    </dependency>
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
@@ -43,30 +67,10 @@
       <version>7.14.0</version>
     </dependency>
 
-    <!-- Depend on core module so glue classes are visible -->
-    <dependency>
-      <groupId>com.example</groupId>
-      <artifactId>core</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-
-    <!-- JSON -->
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20231013</version>
-    </dependency>
-
-    <!-- Spring Boot Web + Thymeleaf -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <version>3.2.5</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-      <version>3.2.5</version>
     </dependency>
   </dependencies>
 
@@ -81,6 +85,13 @@
             --add-opens java.base/java.lang=ALL-UNNAMED
           </jvmArguments>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -88,6 +99,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
         <configuration>
+          <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
           <systemPropertyVariables>
             <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
           </systemPropertyVariables>
@@ -95,7 +107,4 @@
       </plugin>
     </plugins>
   </build>
-
-
-
 </project>

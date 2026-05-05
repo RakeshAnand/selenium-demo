@@ -1,195 +1,338 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
-    <title>Selenium Demo Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selenium Framework Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        #resultsChart {
-            max-width: 300px;
-            max-height: 300px;
-            margin: auto;
+        /* ===== Theme Variables ===== */
+        :root[data-theme="dark"] {
+            --bg-body: radial-gradient(circle at top left, #1e293b, #0f172a);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --navbar-bg: rgba(15, 23, 42, 0.9);
+            --chart-grid: rgba(255, 255, 255, 0.05);
+            --input-bg: #1e293b;
         }
 
-        /* Fixed height for the trend chart */
-        #trendChart {
-            min-height: 250px;
-            max-height: 400px;
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --glass-border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --navbar-bg: #1e293b;
+            --chart-grid: rgba(0, 0, 0, 0.05);
+            --input-bg: #ffffff;
         }
 
+        :root {
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            background: var(--bg-body);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .navbar {
+            background: var(--navbar-bg) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .card {
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 1.25rem !important;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* ===== MODIFIED: Light Progress Overlay ===== */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Light glass effect */
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: none;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .progress-container {
+            width: 350px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        #progressBar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            /* Dark text for light overlay */
+            color: #1e293b;
+        }
+
+        .status-subtext {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        /* ===== Global Components ===== */
         .run-tests-form {
-            margin-top: 30px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            background: var(--card-bg) !important;
+            border: 1px dashed var(--glass-border) !important;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            padding: 0.6rem 1.5rem;
+        }
+
+        .metric-title {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
+    <div id="loadingOverlay">
+        <div class="progress-container">
+            <div id="progressBar"></div>
+        </div>
+        <p class="status-text" id="statusLabel">Initializing Engine...</p>
+        <p class="status-subtext">Automated Selenium Suite is running in the background</p>
+    </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Selenium Framework</a>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/view-report" target="_blank">Latest Extent
-                            Report</a></li>
-                </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">SELENIUM ANALYTICS</a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-light btn-sm me-3" onclick="toggleTheme()" id="themeBtn">🌓
+                    Theme</button>
+                <a class="nav-link text-white small" href="/view-report" target="_blank">Latest Report</a>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row text-center">
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Total Tests</h5>
-                        <p class="display-6 text-primary" th:text="${stats.total}">0</p>
-                    </div>
+    <div class="container mt-4 pb-5">
+        <div class="row g-3 mb-4 text-center">
+            <div class="col-6 col-md-3">
+                <div class="card p-3 shadow-sm">
+                    <p class="metric-title mb-1">Total</p>
+                    <h3 class="fw-bold" th:text="${stats.total}">0</h3>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Passed</h5>
-                        <p class="display-6 text-success" th:text="${stats.passed}">0</p>
-                    </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3 shadow-sm border-bottom border-success border-3">
+                    <p class="metric-title mb-1">Passed</p>
+                    <h3 class="fw-bold text-success" th:text="${stats.passed}">0</h3>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Failed</h5>
-                        <p class="display-6 text-danger" th:text="${stats.failed}">0</p>
-                    </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3 shadow-sm border-bottom border-danger border-3">
+                    <p class="metric-title mb-1">Failed</p>
+                    <h3 class="fw-bold text-danger" th:text="${stats.failed}">0</h3>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Last Execution</h5>
-                        <p class="h5 mt-3 text-secondary" th:text="${stats.lastRunTime}">Never</p>
-                    </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3 shadow-sm">
+                    <p class="metric-title mb-1">Last Run</p>
+                    <p class="mb-0 small text-info" th:text="${stats.lastRunTime}">--:--</p>
                 </div>
             </div>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Execution Trend (Past Runs)</h5>
-                        <canvas id="trendChart"></canvas>
-                    </div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <h6 class="fw-bold mb-3">Stability Trend</h6>
+                    <div class="chart-wrapper"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card p-4 text-center">
+                    <h6 class="fw-bold mb-3">Health Distribution</h6>
+                    <div class="chart-wrapper"><canvas id="resultsChart"></canvas></div>
                 </div>
             </div>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Pass/Fail Distribution</h5>
-                        <canvas id="resultsChart"></canvas>
-                    </div>
+        <div class="run-tests-form shadow-sm mt-4">
+            <div class="row align-items-center">
+                <div class="col-md-7 mb-3 mb-md-0">
+                    <h5 class="fw-bold mb-0">Launch Execution</h5>
+                    <p class="text-muted small mb-0">Select a feature set to start automated tests.</p>
+                </div>
+                <div class="col-md-5">
+                    <form action="/run-tests" method="get" onsubmit="handleStartTests()" class="input-group">
+                        <select class="form-select shadow-none" name="feature">
+                            <option value="All Features">All Features</option>
+                            <option value="login.feature">Login Suite</option>
+                            <option value="todo.feature">API Suite</option>
+                        </select>
+                        <button class="btn btn-primary" type="submit">Run Suite</button>
+                    </form>
                 </div>
             </div>
-        </div>
-
-        <div class="run-tests-form shadow-sm">
-            <h5 class="mb-3">Execute Test Suite</h5>
-            <form action="/run-tests" method="get">
-                <div class="input-group">
-                    <label class="input-group-text" for="featureFile">Feature</label>
-
-                    <select class="form-select" id="featureFile" name="feature">
-                        <option value="All Features" selected>All Features</option>
-                        <option value="login.feature">Login Functionality</option>
-                        <option value="todo.feature">Todo Functionality</option>
-                    </select>
-
-                    <button class="btn btn-primary" type="submit">Run Tests</button>
-                </div>
-            </form>
-            <small class="text-muted mt-2 d-block">Note: Executing via Controller in headless mode.</small>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script th:inline="javascript">
-        /* 1. DATA FROM CONTROLLER */
         const stats = [[${ stats }]];
         const historyData = [[${ history }]];
+        let trendChart, resultsChart;
 
-        console.log("Latest Stats:", stats);
-        console.log("Historical Data:", historyData);
+        // Progress Bar Logic
+        function handleStartTests() {
+            const overlay = document.getElementById('loadingOverlay');
+            const bar = document.getElementById('progressBar');
+            const label = document.getElementById('statusLabel');
+            overlay.style.display = 'flex';
 
-        /* 2. DOUGHNUT CHART (LATEST RUN) */
-        const ctxDoughnut = document.getElementById('resultsChart').getContext('2d');
-        new Chart(ctxDoughnut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Passed', 'Failed', 'Skipped'],
-                datasets: [{
-                    data: [stats.passed, stats.failed, stats.skipped],
-                    backgroundColor: ['#198754', '#dc3545', '#ffc107'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+            let width = 0;
+            const messages = [
+                "Booting WebDriver...",
+                "Parsing Cucumber Scenarios...",
+                "Executing Test Steps...",
+                "Finalizing Report Data..."
+            ];
 
-        /* 3. LINE CHART (TREND) */
-        if (historyData && historyData.length > 0) {
-            const labels = historyData.map(run => run.lastRunTime);
-            const passedTrend = historyData.map(run => run.passed);
-            const failedTrend = historyData.map(run => run.failed);
+            const interval = setInterval(() => {
+                if (width >= 94) {
+                    clearInterval(interval);
+                    label.innerText = "Finalizing Results...";
+                } else {
+                    // Incremental progress simulation
+                    width += (95 - width) * 0.08;
+                    bar.style.width = width + '%';
 
-            const ctxLine = document.getElementById('trendChart').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'line',
+                    if (width > 15 && width < 40) label.innerText = messages[1];
+                    if (width > 40 && width < 80) label.innerText = messages[2];
+                    if (width > 80) label.innerText = messages[3];
+                }
+            }, 700);
+        }
+
+        // Theme Switcher Logic
+        function toggleTheme() {
+            const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+            updateCharts();
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        function updateCharts() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            if (resultsChart) resultsChart.destroy();
+            if (trendChart) trendChart.destroy();
+
+            resultsChart = new Chart(document.getElementById('resultsChart'), {
+                type: 'doughnut',
                 data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Passed',
-                            data: passedTrend,
-                            borderColor: '#198754',
-                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                            fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Failed',
-                            data: failedTrend,
-                            borderColor: '#dc3545',
-                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                            fill: true,
-                            tension: 0.3
-                        }
-                    ]
+                    labels: ['Passed', 'Failed'],
+                    datasets: [{
+                        data: [stats.passed, stats.failed],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
                 },
                 options: {
-                    responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                    },
-                    plugins: { legend: { position: 'top' } }
+                    cutout: '75%',
+                    plugins: { legend: { position: 'bottom', labels: { color: textColor, usePointStyle: true } } }
                 }
             });
+
+            if (historyData && historyData.length > 0) {
+                trendChart = new Chart(document.getElementById('trendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: historyData.map(r => r.lastRunTime),
+                        datasets: [
+                            {
+                                label: 'Passed',
+                                data: historyData.map(r => r.passed),
+                                borderColor: '#10b981',
+                                backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                                fill: true, tension: 0.4
+                            },
+                            {
+                                label: 'Failed',
+                                data: historyData.map(r => r.failed),
+                                borderColor: '#ef4444',
+                                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+                                fill: true, tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 } },
+                            x: { grid: { display: false }, ticks: { color: textColor } }
+                        },
+                        plugins: { legend: { labels: { color: textColor, usePointStyle: true } } }
+                    }
+                });
+            }
         }
+        window.onload = updateCharts;
     </script>
 </body>
 
